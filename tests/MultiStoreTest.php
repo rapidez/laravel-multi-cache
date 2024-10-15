@@ -1,9 +1,9 @@
 <?php
 
-namespace Antriver\LaravelMultiCacheTests;
+namespace Rapidez\LaravelMultiCacheTests;
 
-use Antriver\LaravelMultiCache\MultiStore;
-use Antriver\LaravelMultiCache\MultiStoreServiceProvider;
+use Rapidez\LaravelMultiCache\MultiStore;
+use Rapidez\LaravelMultiCache\MultiStoreServiceProvider;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Support\Facades\Cache;
@@ -102,7 +102,6 @@ class MultiStoreTest extends TestCase
         );
 
         $this->assertSame(2, count($this->getMultiStore()->getStores()));
-        $this->assertSame(2, $this->getMultiStore()->getStoreCount());
     }
 
     /**

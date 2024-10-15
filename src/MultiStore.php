@@ -1,10 +1,11 @@
 <?php
 
-namespace Antriver\LaravelMultiCache;
+namespace Rapidez\LaravelMultiCache;
 
 use Exception;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Cache\RetrievesMultipleKeys;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
 
@@ -18,19 +19,14 @@ class MultiStore implements Store
     protected $app;
 
     /**
-     * @var array
+     * @var array<mixed>
      */
     protected $config;
 
     /**
-     * @var Store[]
+     * @var array<Store|Repository>
      */
     protected $stores = [];
-
-    /**
-     * @var int
-     */
-    protected $storeCount = 0;
 
     /**
      * @var CacheManager
@@ -46,7 +42,7 @@ class MultiStore implements Store
      * MultiStore constructor.
      *
      * @param Application  $app
-     * @param array        $config
+     * @param array<mixed> $config
      * @param CacheManager $cacheManager
      *
      * @throws Exception
@@ -65,12 +61,10 @@ class MultiStore implements Store
         foreach ($config['stores'] as $name) {
             $this->stores[$name] = $this->cacheManager->store($name);
         }
-
-        $this->storeCount = count($this->stores);
     }
 
     /**
-     * @return Store[]
+     * @return array<Store|Repository>
      */
     public function getStores()
     {
@@ -78,18 +72,10 @@ class MultiStore implements Store
     }
 
     /**
-     * @return int
-     */
-    public function getStoreCount()
-    {
-        return $this->storeCount;
-    }
-
-    /**
      * Retrieve an item from the cache by key.
      *
-     * @param  string|array $key
-     *
+     * @param string $key
+     * 
      * @return mixed
      */
     public function get($key)
@@ -121,9 +107,11 @@ class MultiStore implements Store
     /**
      * Store an item in the cache for a given number of minutes.
      *
-     * @param  string    $key
-     * @param  mixed     $value
-     * @param  float|int $seconds
+     * @param  string  $key
+     * @param  mixed  $value
+     * @param  int  $seconds
+     * 
+     * @return bool
      */
     public function put($key, $value, $seconds)
     {
@@ -138,14 +126,14 @@ class MultiStore implements Store
     /**
      * Increment the value of an item in the cache.
      *
-     * @param  string $key
+     * @param  string  $key
      * @param  mixed  $value
-     *
+     * 
      * @return int|bool
      */
     public function increment($key, $value = 1)
     {
-        $returnValue = null;
+        $returnValue = false;
 
         foreach ($this->stores as $store) {
             $returnValue = $store->increment($key, $value);
@@ -157,14 +145,14 @@ class MultiStore implements Store
     /**
      * Decrement the value of an item in the cache.
      *
-     * @param  string $key
+     * @param  string  $key
      * @param  mixed  $value
-     *
+     * 
      * @return int|bool
      */
     public function decrement($key, $value = 1)
     {
-        $returnValue = null;
+        $returnValue = false;
 
         foreach ($this->stores as $store) {
             $returnValue = $store->decrement($key, $value);
@@ -176,8 +164,10 @@ class MultiStore implements Store
     /**
      * Store an item in the cache indefinitely.
      *
-     * @param  string $key
+     * @param  string  $key
      * @param  mixed  $value
+     * 
+     * @return bool
      */
     public function forever($key, $value)
     {
@@ -198,15 +188,13 @@ class MultiStore implements Store
      */
     public function forget($key)
     {
-        $forgotten = 0;
+        $success = true;
 
         foreach ($this->stores as $store) {
-            if ($store->forget($key)) {
-                ++$forgotten;
-            }
+            $success = $store->forget($key) && $success;
         }
 
-        return $forgotten === $this->storeCount;
+        return $success;
     }
 
     /**
@@ -216,15 +204,16 @@ class MultiStore implements Store
      */
     public function flush()
     {
-        $flushed = 0;
+        $success = true;
 
         foreach ($this->stores as $store) {
-            if ($store->flush()) {
-                ++$flushed;
+            if (!method_exists($store, 'flush')) {
+                continue;
             }
+            $success = $store->flush() && $success;
         }
 
-        return $flushed === $this->storeCount;
+        return $success;
     }
 
     /**

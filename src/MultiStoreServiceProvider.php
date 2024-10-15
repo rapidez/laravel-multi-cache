@@ -1,6 +1,6 @@
 <?php
 
-namespace Antriver\LaravelMultiCache;
+namespace Rapidez\LaravelMultiCache;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Support\Facades\Cache;

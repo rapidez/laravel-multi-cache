@@ -6,12 +6,12 @@ An example use is to have an array cache and Redis cache. Fetch items from the a
 
 ## Installation
 ```
-composer require antriver/laravel-multi-cache
+composer require rapidez/laravel-multi-cache
 ```
 
 The service provider will autoload, if you have disabled this add this to your config/app.php `providers` array:
 ```php
-Antriver\LaravelMultiCache\MultiStoreServiceProvider::class
+Rapidez\LaravelMultiCache\MultiStoreServiceProvider::class
 ```
 
 Add the `multi` store to your `config/cache.php` `stores` array:
