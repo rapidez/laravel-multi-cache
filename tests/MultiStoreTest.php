@@ -2,23 +2,16 @@
 
 namespace Rapidez\LaravelMultiCacheTests;
 
-use Rapidez\LaravelMultiCache\MultiStore;
-use Rapidez\LaravelMultiCache\MultiStoreServiceProvider;
+use Exception;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Support\Facades\Cache;
 use Orchestra\Testbench\TestCase;
+use Rapidez\LaravelMultiCache\MultiStore;
+use Rapidez\LaravelMultiCache\MultiStoreServiceProvider;
 
 class MultiStoreTest extends TestCase
 {
-    protected function getApplicationProviders($app)
-    {
-        return [
-            ...parent::getApplicationProviders($app),
-            MultiStoreServiceProvider::class,
-        ];
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -52,35 +45,13 @@ class MultiStoreTest extends TestCase
     }
 
     /**
-     * @return MultiStore
-     */
-    protected function getMultiStore()
-    {
-        return Cache::store('multi');
-    }
-
-    /**
-     * @return ArrayStore
-     */
-    protected function getPrimaryStore()
-    {
-        return Cache::store('array-primary');
-    }
-
-    /**
-     * @return ArrayStore
-     */
-    protected function getSecondaryStore()
-    {
-        return Cache::store('array-secondary');
-    }
-
-    /**
      * Creating a MultiStore with no stores should throw an exception.
+     *
+     * @test
      */
-    public function testCreateWithoutStoresThrowsException()
+    public function createWithoutStoresThrowsException()
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
 
         $multiStore = new MultiStore(
             app(),
@@ -93,8 +64,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Test the defined stores are created in the MultiStore.
+     *
+     * @test
      */
-    public function testStoresAreCreated()
+    public function storesAreCreated()
     {
         $this->assertContainsOnlyInstancesOf(
             \Illuminate\Cache\Repository::class,
@@ -106,8 +79,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Should return null if the value is not in any store.
+     *
+     * @test
      */
-    public function testGetReturnsNull()
+    public function getReturnsNull()
     {
         $this->assertNull($this->getPrimaryStore()->get('hello'));
         $this->assertNull($this->getSecondaryStore()->get('hello'));
@@ -117,8 +92,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Test the value is returned from the primary store if it exists in it.
+     *
+     * @test
      */
-    public function testGetFromPrimary()
+    public function getFromPrimary()
     {
         $this->getPrimaryStore()->put('hello', 'world', 1);
         $this->getSecondaryStore()->put('hello', 'world2', 1);
@@ -127,8 +104,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Test the value is returned from the secondary store if not in the primary.
+     *
+     * @test
      */
-    public function testGetFromSecondary()
+    public function getFromSecondary()
     {
         $value = uniqid();
 
@@ -140,8 +119,10 @@ class MultiStoreTest extends TestCase
     /**
      * Test the value is returned from the secondary store, and then stored in the primary,
      * if not already in the primary.
+     *
+     * @test
      */
-    public function testGetFromSecondStoresInPrimary()
+    public function getFromSecondStoresInPrimary()
     {
         $this->assertNull($this->getPrimaryStore()->get('hello'));
 
@@ -156,8 +137,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Testing storing a value stores it in all stores.
+     *
+     * @test
      */
-    public function testPutStoresInAllStores()
+    public function putStoresInAllStores()
     {
         $this->assertNull($this->getPrimaryStore()->get('hello'));
         $this->assertNull($this->getSecondaryStore()->get('hello'));
@@ -172,8 +155,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Testing storing a value stores it in all stores.
+     *
+     * @test
      */
-    public function testForeverStoresInAllStores()
+    public function foreverStoresInAllStores()
     {
         $this->assertNull($this->getPrimaryStore()->get('hello'));
         $this->assertNull($this->getSecondaryStore()->get('hello'));
@@ -188,8 +173,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Increment should increment all stores.
+     *
+     * @test
      */
-    public function testIncrement()
+    public function increment()
     {
         $this->getPrimaryStore()->put('number', 1, 1);
         $this->getSecondaryStore()->put('number', 1, 1);
@@ -202,8 +189,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Increment should decrement all stores.
+     *
+     * @test
      */
-    public function testDecrement()
+    public function decrement()
     {
         $this->getPrimaryStore()->put('number', 1, 1);
         $this->getSecondaryStore()->put('number', 1, 1);
@@ -216,8 +205,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Forget should forget in all stores.
+     *
+     * @test
      */
-    public function testForget()
+    public function forget()
     {
         $this->getPrimaryStore()->put('hello', 'world1', 1);
         $this->getPrimaryStore()->put('goodbye', 'world2', 1);
@@ -236,8 +227,10 @@ class MultiStoreTest extends TestCase
 
     /**
      * Flush should flush in all stores.
+     *
+     * @test
      */
-    public function testFlush()
+    public function flush()
     {
         $this->getPrimaryStore()->put('hello', 'world1', 1);
         $this->getPrimaryStore()->put('goodbye', 'world2', 1);
@@ -254,12 +247,18 @@ class MultiStoreTest extends TestCase
         $this->assertNull($this->getSecondaryStore()->get('hello'));
     }
 
-    public function testGetPrefixReturnsEmptyString()
+    /**
+     * @test
+     */
+    public function getPrefixReturnsEmptyString()
     {
         $this->assertSame('', $this->getMultiStore()->getPrefix());
     }
 
-    public function testSyncMissedStoresIsFalse()
+    /**
+     * @test
+     */
+    public function syncMissedStoresIsFalse()
     {
         config()->set('cache.stores.multi.sync_missed_stores', false);
 
@@ -274,7 +273,10 @@ class MultiStoreTest extends TestCase
         $this->assertNull($this->getPrimaryStore()->get('hello'));
     }
 
-    public function testSyncMissedStoresConfigIsMissing()
+    /**
+     * @test
+     */
+    public function syncMissedStoresConfigIsMissing()
     {
         // Config is first written inside setUp function. Here we overwrite it
         // so that sync_missed_stores is deleted from config.
@@ -298,5 +300,37 @@ class MultiStoreTest extends TestCase
         $this->assertSame($value, $this->getMultiStore()->get('hello'));
 
         $this->assertSame($value, $this->getPrimaryStore()->get('hello'));
+    }
+
+    protected function getApplicationProviders($app)
+    {
+        return [
+            ...parent::getApplicationProviders($app),
+            MultiStoreServiceProvider::class,
+        ];
+    }
+
+    /**
+     * @return MultiStore
+     */
+    protected function getMultiStore()
+    {
+        return Cache::store('multi');
+    }
+
+    /**
+     * @return ArrayStore
+     */
+    protected function getPrimaryStore()
+    {
+        return Cache::store('array-primary');
+    }
+
+    /**
+     * @return ArrayStore
+     */
+    protected function getSecondaryStore()
+    {
+        return Cache::store('array-secondary');
     }
 }
