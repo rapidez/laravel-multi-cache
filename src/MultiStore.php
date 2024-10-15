@@ -41,9 +41,7 @@ class MultiStore implements Store
     /**
      * MultiStore constructor.
      *
-     * @param Application  $app
-     * @param array<mixed> $config
-     * @param CacheManager $cacheManager
+     * @param  array<mixed>  $config
      *
      * @throws Exception
      */
@@ -52,10 +50,10 @@ class MultiStore implements Store
         $this->app = $app;
         $this->config = $config;
         $this->cacheManager = $cacheManager;
-        $this->syncMissedStores = !isset($config['sync_missed_stores']) || $config['sync_missed_stores'];
+        $this->syncMissedStores = ! isset($config['sync_missed_stores']) || $config['sync_missed_stores'];
 
         if (empty($config['stores'])) {
-            throw new Exception("No stores are defined for multi cache.");
+            throw new Exception('No stores are defined for multi cache.');
         }
 
         foreach ($config['stores'] as $name) {
@@ -74,8 +72,7 @@ class MultiStore implements Store
     /**
      * Retrieve an item from the cache by key.
      *
-     * @param string $key
-     * 
+     * @param  string  $key
      * @return mixed
      */
     public function get($key)
@@ -110,7 +107,6 @@ class MultiStore implements Store
      * @param  string  $key
      * @param  mixed  $value
      * @param  int  $seconds
-     * 
      * @return bool
      */
     public function put($key, $value, $seconds)
@@ -128,7 +124,6 @@ class MultiStore implements Store
      *
      * @param  string  $key
      * @param  mixed  $value
-     * 
      * @return int|bool
      */
     public function increment($key, $value = 1)
@@ -147,7 +142,6 @@ class MultiStore implements Store
      *
      * @param  string  $key
      * @param  mixed  $value
-     * 
      * @return int|bool
      */
     public function decrement($key, $value = 1)
@@ -166,7 +160,6 @@ class MultiStore implements Store
      *
      * @param  string  $key
      * @param  mixed  $value
-     * 
      * @return bool
      */
     public function forever($key, $value)
@@ -182,8 +175,7 @@ class MultiStore implements Store
     /**
      * Remove an item from the cache.
      *
-     * @param  string $key
-     *
+     * @param  string  $key
      * @return bool
      */
     public function forget($key)
