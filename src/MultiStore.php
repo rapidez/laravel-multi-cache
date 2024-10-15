@@ -207,10 +207,7 @@ class MultiStore implements Store
         $success = true;
 
         foreach ($this->stores as $store) {
-            if (!method_exists($store, 'flush')) {
-                continue;
-            }
-            $success = $store->flush() && $success;
+            $success = $store->flush() && $success; // @phpstan-ignore-line
         }
 
         return $success;
