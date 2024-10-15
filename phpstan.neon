@@ -6,7 +6,3 @@ parameters:
     paths:
         - src
     level: max
-    ignoreErrors:
-        -
-            message: '#Static method Illuminate\\Support\\Facades\\Cache::repository\(\) invoked with 1 parameter, 2 required\.#'
-            reportUnmatched: false

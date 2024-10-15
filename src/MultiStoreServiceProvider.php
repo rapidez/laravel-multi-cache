@@ -22,6 +22,7 @@ class MultiStoreServiceProvider extends ServiceProvider
                     $config,
                     $app->make(CacheManager::class)
                 )
+                // $config TODO: add this second parameter when dropping L10 support
             );
         });
     }
