@@ -5,10 +5,10 @@ namespace Rapidez\LaravelMultiCache;
 use Exception;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Cache\RetrievesMultipleKeys;
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
-use Illuminate\Cache\TaggableStore;
 
 class MultiStore extends TaggableStore
 {
@@ -25,14 +25,14 @@ class MultiStore extends TaggableStore
     public $config;
 
     /**
-     * @var array<Store|Repository>
-     */
-    protected $stores = [];
-
-    /**
      * @var CacheManager
      */
     public $cacheManager;
+
+    /**
+     * @var array<Store|Repository>
+     */
+    protected $stores = [];
 
     /**
      * @var bool
@@ -60,7 +60,7 @@ class MultiStore extends TaggableStore
 
         foreach ($config['stores'] as $name) {
             $this->stores[$name] = $this->cacheManager->store($name);
-            if ($tags === null || !count($tags)) {
+            if ($tags === null || ! count($tags)) {
                 continue;
             }
 
@@ -76,7 +76,6 @@ class MultiStore extends TaggableStore
      * Flushing will then flush all items.
      *
      * @param  mixed  $names
-     * @return MultiStoreTaggedCache
      */
     public function tags($names): MultiStoreTaggedCache
     {
