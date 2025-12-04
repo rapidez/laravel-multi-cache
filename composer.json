@@ -19,7 +19,7 @@
     "require-dev": {
         "larastan/larastan": "^2.9",
         "mockery/mockery": "^1.6",
-        "orchestra/testbench": "^9.0|^8.0",
+        "orchestra/testbench": "^10.0|^9.1.4",
         "phpstan/phpstan-mockery": "^1.1",
         "phpunit/phpunit": "^10.5"
     },
