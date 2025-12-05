@@ -302,6 +302,28 @@ class MultiStoreTest extends TestCase
         $this->assertSame($value, $this->getPrimaryStore()->get('hello'));
     }
 
+    /**
+     * @test
+     */
+    public function taggableStoresAllFlush()
+    {
+        $this->assertNull($this->getMultiStore()->tags('test')->get('hello'));
+        $this->assertNull($this->getMultiStore()->tags('testb')->get('hellos'));
+
+        $value = uniqid();
+
+        $this->getMultiStore()->tags('test')->put('hello', $value, 1);
+        $this->getMultiStore()->tags('testb')->put('hellos', $value, 1);
+
+        $this->assertSame($value, $this->getMultiStore()->tags('test')->get('hello'));
+        $this->assertSame($value, $this->getMultiStore()->tags('testb')->get('hellos'));
+
+        $this->getMultiStore()->tags('test')->flush();
+
+        $this->assertNull($this->getMultiStore()->tags('test')->get('hello'));
+        $this->assertSame($value, $this->getMultiStore()->tags('testb')->get('hellos'));
+    }
+
     protected function getApplicationProviders($app)
     {
         return [

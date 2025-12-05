@@ -5,33 +5,34 @@ namespace Rapidez\LaravelMultiCache;
 use Exception;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Cache\RetrievesMultipleKeys;
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
 
-class MultiStore implements Store
+class MultiStore extends TaggableStore
 {
     use RetrievesMultipleKeys;
 
     /**
      * @var Application
      */
-    protected $app;
+    public $app;
 
     /**
      * @var array<mixed>
      */
-    protected $config;
+    public $config;
+
+    /**
+     * @var CacheManager
+     */
+    public $cacheManager;
 
     /**
      * @var array<Store|Repository>
      */
     protected $stores = [];
-
-    /**
-     * @var CacheManager
-     */
-    protected $cacheManager;
 
     /**
      * @var bool
@@ -42,10 +43,11 @@ class MultiStore implements Store
      * MultiStore constructor.
      *
      * @param  array<mixed>  $config
+     * @param  ?array<string>  $tags
      *
      * @throws Exception
      */
-    public function __construct(Application $app, array $config, CacheManager $cacheManager)
+    public function __construct(Application $app, array $config, CacheManager $cacheManager, ?array $tags = null)
     {
         $this->app = $app;
         $this->config = $config;
@@ -58,7 +60,26 @@ class MultiStore implements Store
 
         foreach ($config['stores'] as $name) {
             $this->stores[$name] = $this->cacheManager->store($name);
+            if ($tags === null || ! count($tags)) {
+                continue;
+            }
+
+            if ($this->stores[$name]->supportsTags()) {
+                $this->stores[$name] = $this->stores[$name]->tags($tags);
+            }
         }
+    }
+
+    /**
+     * Begin executing a new tags operation.
+     * Disclaimer: any store that does not support tags will run actions without tags.
+     * Flushing will then flush all items.
+     *
+     * @param  mixed  $names
+     */
+    public function tags($names): MultiStoreTaggedCache
+    {
+        return new MultiStoreTaggedCache(new self($this->app, $this->config, $this->cacheManager, tags: is_array($names) ? $names : func_get_args()), new \Illuminate\Cache\TagSet($this, is_array($names) ? $names : func_get_args()));
     }
 
     /**
@@ -102,7 +123,7 @@ class MultiStore implements Store
     }
 
     /**
-     * Store an item in the cache for a given number of minutes.
+     * Store an item in all cache stores for a given number of minutes.
      *
      * @param  string  $key
      * @param  mixed  $value
@@ -120,7 +141,7 @@ class MultiStore implements Store
     }
 
     /**
-     * Increment the value of an item in the cache.
+     * Increment the value of an item all cache stores.
      *
      * @param  string  $key
      * @param  mixed  $value
@@ -138,7 +159,7 @@ class MultiStore implements Store
     }
 
     /**
-     * Decrement the value of an item in the cache.
+     * Decrement the value of an item in all cache stores.
      *
      * @param  string  $key
      * @param  mixed  $value
@@ -156,7 +177,7 @@ class MultiStore implements Store
     }
 
     /**
-     * Store an item in the cache indefinitely.
+     * Store an item on all cache stores indefinitely.
      *
      * @param  string  $key
      * @param  mixed  $value
@@ -173,7 +194,7 @@ class MultiStore implements Store
     }
 
     /**
-     * Remove an item from the cache.
+     * Remove an item from all cache stores.
      *
      * @param  string  $key
      * @return bool
@@ -190,7 +211,7 @@ class MultiStore implements Store
     }
 
     /**
-     * Remove all items from the cache.
+     * Remove all items from all cache stores.
      *
      * @return bool
      */
@@ -203,6 +224,22 @@ class MultiStore implements Store
         }
 
         return $success;
+    }
+
+    /**
+     * Remove all expired tag set entries.
+     *
+     * @return void
+     */
+    public function flushStaleTags()
+    {
+        foreach ($this->stores as $store) {
+            if (method_exists($store, 'flushStaleTags')) {
+                $store->flushStaleTags();
+
+                break;
+            }
+        }
     }
 
     /**
