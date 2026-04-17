@@ -238,7 +238,13 @@ class MultiStore extends TaggableStore
         $success = true;
 
         foreach ($this->stores as $store) {
-            $success = ($store instanceof Repository ? $store->clear() : $store->flush()) && $success;
+            if (method_exists($store, 'flush')) {
+                $success = $store->flush() && $success;
+            } else if (method_exists($store, 'clear')) {
+                $success = $store->clear() && $success;
+            } else {
+                $success = false;
+            }
         }
 
         return $success;
