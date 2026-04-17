@@ -141,6 +141,24 @@ class MultiStore extends TaggableStore
     }
 
     /**
+     * Set the expiration of a cached item.
+     *
+     * @param  string  $key
+     * @param  int  $seconds
+     * @return bool
+     */
+    public function touch($key, $seconds)
+    {
+        $value = $this->get($key);
+
+        if ($value === null) {
+            return false;
+        }
+
+        return $this->put($key, $value, $seconds);
+    }
+
+    /**
      * Increment the value of an item all cache stores.
      *
      * @param  string  $key
