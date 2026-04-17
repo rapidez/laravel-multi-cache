@@ -238,7 +238,7 @@ class MultiStore extends TaggableStore
         $success = true;
 
         foreach ($this->stores as $store) {
-            $success = $store->flush() && $success; // @phpstan-ignore-line
+            $success = $store->flush() && $success;
         }
 
         return $success;
