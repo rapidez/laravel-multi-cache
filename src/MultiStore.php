@@ -237,7 +237,8 @@ class MultiStore extends TaggableStore
     {
         $success = true;
 
-        foreach ($this->stores as $store) {
+        foreach ($this->stores as $cache) {
+            $store = $cache instanceof Repository ? $cache->getStore() : $cache;
             $success = $store->flush() && $success;
         }
 
