@@ -83,6 +83,7 @@ class MultiStore extends TaggableStore
     {
         /** @var array<string> $tags */
         $tags = is_array($names) ? $names : func_get_args();
+
         return new MultiStoreTaggedCache(new self($this->app, $this->config, $this->cacheManager, tags: $tags), new \Illuminate\Cache\TagSet($this, is_array($names) ? $names : func_get_args()));
     }
 
@@ -244,7 +245,7 @@ class MultiStore extends TaggableStore
         foreach ($this->stores as $store) {
             if (method_exists($store, 'flush')) { // @phpstan-ignore-line
                 $success = $store->flush() && $success;
-            } else if (method_exists($store, 'clear')) {
+            } elseif (method_exists($store, 'clear')) {
                 $success = $store->clear() && $success;
             } else {
                 $success = false;
