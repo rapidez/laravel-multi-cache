@@ -58,7 +58,9 @@ class MultiStore extends TaggableStore
             throw new Exception('No stores are defined for multi cache.');
         }
 
-        foreach ($config['stores'] as $name) {
+        /** @var array<string> $stores */
+        $stores = $config['stores'];
+        foreach ($stores as $name) {
             $this->stores[$name] = $this->cacheManager->store($name);
             if ($tags === null || ! count($tags)) {
                 continue;
@@ -79,7 +81,9 @@ class MultiStore extends TaggableStore
      */
     public function tags($names): MultiStoreTaggedCache
     {
-        return new MultiStoreTaggedCache(new self($this->app, $this->config, $this->cacheManager, tags: is_array($names) ? $names : func_get_args()), new \Illuminate\Cache\TagSet($this, is_array($names) ? $names : func_get_args()));
+        /** @var array<string> $tags */
+        $tags = is_array($names) ? $names : func_get_args();
+        return new MultiStoreTaggedCache(new self($this->app, $this->config, $this->cacheManager, tags: $tags), new \Illuminate\Cache\TagSet($this, is_array($names) ? $names : func_get_args()));
     }
 
     /**

@@ -5,5 +5,5 @@ includes:
 parameters:
     paths:
         - src
-    level: 8
+    level: max
     treatPhpDocTypesAsCertain: false

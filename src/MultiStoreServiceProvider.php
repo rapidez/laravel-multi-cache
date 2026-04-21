@@ -3,6 +3,7 @@
 namespace Rapidez\LaravelMultiCache;
 
 use Illuminate\Cache\CacheManager;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,7 +16,7 @@ class MultiStoreServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Cache::extend('multi', function ($app, $config) {
+        Cache::extend('multi', function (Application $app, array $config) {
             return Cache::repository(
                 new MultiStore(
                     $app,
