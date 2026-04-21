@@ -58,7 +58,9 @@ class MultiStore extends TaggableStore
             throw new Exception('No stores are defined for multi cache.');
         }
 
-        foreach ($config['stores'] as $name) {
+        /** @var array<string> $stores */
+        $stores = $config['stores'];
+        foreach ($stores as $name) {
             $this->stores[$name] = $this->cacheManager->store($name);
             if ($tags === null || ! count($tags)) {
                 continue;
@@ -79,7 +81,9 @@ class MultiStore extends TaggableStore
      */
     public function tags($names): MultiStoreTaggedCache
     {
-        return new MultiStoreTaggedCache(new self($this->app, $this->config, $this->cacheManager, tags: is_array($names) ? $names : func_get_args()), new \Illuminate\Cache\TagSet($this, is_array($names) ? $names : func_get_args()));
+        /** @var array<string> $tags */
+        $tags = is_array($names) ? $names : func_get_args();
+        return new MultiStoreTaggedCache(new self($this->app, $this->config, $this->cacheManager, tags: $tags), new \Illuminate\Cache\TagSet($this, is_array($names) ? $names : func_get_args()));
     }
 
     /**
@@ -138,6 +142,24 @@ class MultiStore extends TaggableStore
         }
 
         return $success;
+    }
+
+    /**
+     * Set the expiration of a cached item.
+     *
+     * @param  string  $key
+     * @param  int  $seconds
+     * @return bool
+     */
+    public function touch($key, $seconds)
+    {
+        $value = $this->get($key);
+
+        if ($value === null) {
+            return false;
+        }
+
+        return $this->put($key, $value, $seconds);
     }
 
     /**
@@ -220,7 +242,13 @@ class MultiStore extends TaggableStore
         $success = true;
 
         foreach ($this->stores as $store) {
-            $success = $store->flush() && $success; // @phpstan-ignore-line
+            if (method_exists($store, 'flush')) { // @phpstan-ignore-line
+                $success = $store->flush() && $success;
+            } else if (method_exists($store, 'clear')) {
+                $success = $store->clear() && $success;
+            } else {
+                $success = false;
+            }
         }
 
         return $success;
