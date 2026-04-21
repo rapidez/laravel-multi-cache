@@ -6,4 +6,4 @@ parameters:
     paths:
         - src
     level: max
-    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false

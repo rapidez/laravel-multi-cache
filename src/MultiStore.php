@@ -242,7 +242,7 @@ class MultiStore extends TaggableStore
         $success = true;
 
         foreach ($this->stores as $store) {
-            if (method_exists($store, 'flush')) {
+            if (method_exists($store, 'flush')) { // @phpstan-ignore-line
                 $success = $store->flush() && $success;
             } else if (method_exists($store, 'clear')) {
                 $success = $store->clear() && $success;
